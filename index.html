@@ -113,11 +113,13 @@ href="https://github.com/jadestorm/">Jadestorm</a>. Thank you!!!</p>
 
 <p>The patroni module sets up the following:</p>
 <ul><li>
-<p>Installs Patroni via package manager</p>
+<p>Install necessary PostgreSQL packages</p>
+</li><li>
+<p>Installs Patroni via Pip or package</p>
 </li><li>
 <p>Sets up a systemd based service for Patroni</p>
 </li><li>
-<p>Manages Patroni&#39;s configuration at /etc/patroni</p>
+<p>Manages Patroni&#39;s configuration</p>
 </li></ul>
 
 <h3 id="label-Setup+Requirements">Setup Requirements</h3>
@@ -127,16 +129,10 @@ href="https://github.com/zalando/patroni">how Patroni works</a>, as you
 will also need a variety of other components to accomplish anything useful
 with Patroni.</p>
 
-<p>You also need to make sure the patroni package is available somewhere. For
-RPM based systems, you can get the package from <a
+<p>If not installing via Pip and setting <code>$install_method =&gt;
+&#39;package&#39;</code>, you also need to make sure the patroni package is
+available somewhere. For RPM based systems, you can get the package from <a
 href="https://github.com/cybertec-postgresql/patroni-packaging/releases">here</a>.</p>
-
-<p>You will also need to get PostgreSQL itself installed yourself. Patroni
-handles starting PostgreSQL on it&#39;s own, but you need to get the
-software installed. One pretty easy recommendation I have is to simply pull
-in <a href="https://forge.puppet.com/puppetlabs/postgresql">puppetlab’s
-postgresql module</a> and make use of the <code>postgresql::globals</code>
-class. We will demonstrate a very simple manifest for that below.</p>
 
 <h3 id="label-Beginning+with+patroni">Beginning with patroni</h3>
 
@@ -161,21 +157,7 @@ needed for Patroni.</p>
 
 <h2 id="label-Usage">Usage</h2>
 
-<p>If you want to use PostgreSQL&#39;s own repositories, you could do
-something like:</p>
-
-<pre class="code ruby"><code class="ruby">class { &#39;postgresql::globals&#39;:
-  manage_package_repo =&gt; true,
-}
-package { &#39;postgresql96-server&#39;:
-  ensure =&gt; present,
-}
-class { &#39;patroni&#39;:
-  scope =&gt; &#39;mycluster&#39;,
-}
-</code></pre>
-
-<p>A much more fleshed out example might be something like:</p>
+<p>Below is a full example:</p>
 
 <pre class="code ruby"><code class="ruby"># First PostgreSQL server
 node pg1 {
@@ -191,16 +173,6 @@ node pg1 {
       &#39;pg2=http://pg2.example.org:2380&#39;,
     ],
     initial_cluster_state       =&gt; &#39;existing&#39;,
-  }
-
-  class { &#39;postgresql::globals&#39;:
-    encoding            =&gt; &#39;UTF-8&#39;,
-    locale              =&gt; &#39;en_US.UTF-8&#39;,
-    manage_package_repo =&gt; true,
-    version             =&gt; &#39;9.6&#39;,
-  }
-  package { [&#39;postgresql96-server&#39;,&#39;postgresql96-contrib&#39;]:
-    ensure =&gt; present,
   }
 
   class { &#39;patroni&#39;:
@@ -238,16 +210,6 @@ node pg2 {
       &#39;pg2=http://pg2.example.org:2380&#39;,
     ],
     initial_cluster_state       =&gt; &#39;existing&#39;,
-  }
-
-  class { &#39;postgresql::globals&#39;:
-    encoding            =&gt; &#39;UTF-8&#39;,
-    locale              =&gt; &#39;en_US.UTF-8&#39;,
-    manage_package_repo =&gt; true,
-    version             =&gt; &#39;9.6&#39;,
-  }
-  package { [&#39;postgresql96-server&#39;,&#39;postgresql96-contrib&#39;]:
-    ensure =&gt; present,
   }
 
   class { &#39;patroni&#39;:
@@ -305,9 +267,8 @@ up Patroni.</p>
 
 <h2 id="label-Limitations">Limitations</h2>
 
-<p>This is currently only supported on RedHat Enterprise Linux 7 based
-systems. I would love to see support on other distributions and even
-OS&#39;s, so if you are interested in contributing please do so!</p>
+<p>This module is currently only supported on RHEL and Debian based operating
+systems that support Systemd.</p>
 
 <h2 id="label-Development">Development</h2>
 

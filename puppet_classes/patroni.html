@@ -2482,7 +2482,9 @@ when <code>install_method</code> is <code>pip</code></p>
 503
 504
 505
-506</pre>
+506
+507
+508</pre>
       </td>
       <td>
         <pre class="code"><span class="info file"># File 'manifests/init.pp', line 238</span>
@@ -2636,12 +2638,14 @@ class patroni (
       encoding            =&gt; &#39;UTF-8&#39;,
       locale              =&gt; &#39;en_US.UTF-8&#39;,
       manage_package_repo =&gt; true,
+      version             =&gt; $postgresql_version,
     }
     include postgresql::params
     $default_data_dir = $postgresql::params::datadir
     $default_bin_dir = $postgresql::params::bindir
-    package { $postgresql::params::server_package_name:
+    package { &#39;patroni-postgresql-package&#39;:
       ensure  =&gt; present,
+      name    =&gt; $postgresql::params::server_package_name,
       require =&gt; Class[&#39;postgresql::repo&#39;],
       before  =&gt; Service[&#39;patroni&#39;],
     }
@@ -2649,7 +2653,7 @@ class patroni (
       path        =&gt; &#39;/usr/bin:/bin&#39;,
       command     =&gt; &quot;/bin/rm -rf ${default_data_dir}&quot;,
       refreshonly =&gt; true,
-      subscribe   =&gt; Package[$postgresql::params::server_package_name],
+      subscribe   =&gt; Package[&#39;patroni-postgresql-package&#39;],
       before      =&gt; Service[&#39;patroni&#39;],
     }
   } else {
