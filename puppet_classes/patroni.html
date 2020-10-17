@@ -2484,7 +2484,12 @@ when <code>install_method</code> is <code>pip</code></p>
 505
 506
 507
-508</pre>
+508
+509
+510
+511
+512
+513</pre>
       </td>
       <td>
         <pre class="code"><span class="info file"># File 'manifests/init.pp', line 238</span>
@@ -2658,7 +2663,7 @@ class patroni (
     }
   } else {
     $default_data_dir = &#39;/var/lib/patroni&#39;
-    $default_bin_dir = &#39;&#39;
+    $default_bin_dir = false
   }
 
   $_pgsql_data_dir = pick($pgsql_data_dir, $default_data_dir)
@@ -2679,30 +2684,34 @@ class patroni (
     }
     if $facts[&#39;os&#39;][&#39;family&#39;] == &#39;RedHat&#39; {
       python::virtualenv { &#39;patroni&#39;:
-        version    =&gt; $python_venv_version,
-        venv_dir   =&gt; $install_dir,
-        virtualenv =&gt; &#39;virtualenv-3&#39;,
-        systempkgs =&gt; true,
-        distribute =&gt; false,
-        require    =&gt; Exec[&#39;patroni-mkdir-install_dir&#39;],
+        version     =&gt; $python_venv_version,
+        venv_dir    =&gt; $install_dir,
+        virtualenv  =&gt; &#39;virtualenv-3&#39;,
+        systempkgs  =&gt; true,
+        distribute  =&gt; false,
+        environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+        require     =&gt; Exec[&#39;patroni-mkdir-install_dir&#39;],
       }
     }
     if $facts[&#39;os&#39;][&#39;family&#39;] == &#39;Debian&#39; {
       python::pyvenv { &#39;patroni&#39;:
-        version    =&gt; $python_venv_version,
-        venv_dir   =&gt; $install_dir,
-        systempkgs =&gt; true,
-        require    =&gt; Exec[&#39;patroni-mkdir-install_dir&#39;],
+        version     =&gt; $python_venv_version,
+        venv_dir    =&gt; $install_dir,
+        systempkgs  =&gt; true,
+        environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+        require     =&gt; Exec[&#39;patroni-mkdir-install_dir&#39;],
       }
     }
     python::pip { &#39;patroni&#39;:
-      ensure     =&gt; $version,
-      virtualenv =&gt; $install_dir,
-      before     =&gt; File[&#39;patroni_config&#39;],
+      ensure      =&gt; $version,
+      virtualenv  =&gt; $install_dir,
+      environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+      before      =&gt; File[&#39;patroni_config&#39;],
     }
     $dependency_params = {
-      &#39;virtualenv&#39; =&gt; $install_dir,
-      &#39;before&#39;     =&gt; Python::Pip[&#39;patroni&#39;],
+      &#39;virtualenv&#39;  =&gt; $install_dir,
+      &#39;before&#39;      =&gt; Python::Pip[&#39;patroni&#39;],
+      &#39;environment&#39; =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
     }
     python::pip { &#39;psycopg2&#39;: * =&gt; $dependency_params }
     if $use_consul {
@@ -2724,8 +2733,9 @@ class patroni (
 
   if $install_method == &#39;pip&#39; {
     $config_dir = dirname($config_path)
-    file { $config_dir:
+    file { &#39;patroni_config_dir&#39;:
       ensure =&gt; &#39;directory&#39;,
+      path   =&gt; $config_dir,
       owner  =&gt; &#39;postgres&#39;,
       group  =&gt; &#39;postgres&#39;,
       mode   =&gt; &#39;0755&#39;,
