@@ -2221,6 +2221,24 @@ when <code>install_method</code> is <code>pip</code></p>
       
     </li>
   
+    <li>
+      
+        <span class='name'>custom_pip_provider</span>
+      
+      
+        <span class='type'>(<tt>Optional[String[1]]</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>undef</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Use custom pip path when installing pip packages</p>
+</div>
+      
+    </li>
+  
 </ul>
 
 
@@ -2232,7 +2250,6 @@ when <code>install_method</code> is <code>pip</code></p>
         <pre class="lines">
 
 
-240
 241
 242
 243
@@ -2528,10 +2545,20 @@ when <code>install_method</code> is <code>pip</code></p>
 533
 534
 535
-536</pre>
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 240</span>
+        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 241</span>
 
 class patroni (
 
@@ -2676,6 +2703,7 @@ class patroni (
   String $service_name = &#39;patroni&#39;,
   String $service_ensure = &#39;running&#39;,
   Boolean $service_enable = true,
+  Optional[String[1]] $custom_pip_provider = undef,
 ) {
   if $manage_postgresql {
     class { &#39;postgresql::globals&#39;:
@@ -2756,17 +2784,25 @@ class patroni (
       }
     }
 
+    if $custom_pip_provider {
+      $virtualenv = undef
+    } else {
+      $virtualenv = $install_dir
+    }
+
     python::pip { &#39;patroni&#39;:
-      ensure      =&gt; $version,
-      virtualenv  =&gt; $install_dir,
-      environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
-      before      =&gt; File[&#39;patroni_config&#39;],
+      ensure       =&gt; $version,
+      environment  =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+      pip_provider =&gt; $custom_pip_provider,
+      virtualenv   =&gt; $virtualenv,
+      before       =&gt; File[&#39;patroni_config&#39;],
     }
 
     $dependency_params = {
-      &#39;virtualenv&#39;  =&gt; $install_dir,
-      &#39;before&#39;      =&gt; Python::Pip[&#39;patroni&#39;],
-      &#39;environment&#39; =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+      &#39;before&#39;       =&gt; Python::Pip[&#39;patroni&#39;],
+      &#39;pip_provider&#39; =&gt; $custom_pip_provider,
+      &#39;virtualenv&#39;   =&gt; $virtualenv,
+      &#39;environment&#39;  =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
     }
 
     python::pip { &#39;psycopg2&#39;: * =&gt; $dependency_params }
