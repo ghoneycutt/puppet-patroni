@@ -6,7 +6,7 @@
 <title>
   Puppet Class: patroni
   
-    &mdash; Documentation by YARD 0.9.26
+    &mdash; Documentation by YARD 0.9.34
   
 </title>
 
@@ -80,6 +80,7 @@
     
   </div>
 </div>
+
 
 
 <div class="tags">
@@ -2087,6 +2088,24 @@
   
     <li>
       
+        <span class='name'>manage_venv_package</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>true</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Whether to manage the Python venv package</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
         <span class='name'>config_path</span>
       
       
@@ -2240,8 +2259,6 @@
         <pre class="lines">
 
 
-243
-244
 245
 246
 247
@@ -2560,19 +2577,10 @@
 560
 561
 562
-563
-564
-565
-566
-567
-568
-569
-570
-571
-572</pre>
+563</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 243</span>
+        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 245</span>
 
 class patroni (
 
@@ -2711,6 +2719,7 @@ class patroni (
   Stdlib::Absolutepath $install_dir = &#39;/opt/app/patroni&#39;,
   String $python_class_version = &#39;36&#39;,
   String $python_venv_version = &#39;3.6&#39;,
+  Boolean $manage_venv_package = true,
   String $config_path = &#39;/opt/app/patroni/etc/postgresql.yml&#39;,
   String $config_owner = &#39;postgres&#39;,
   String $config_group = &#39;postgres&#39;,
@@ -2781,9 +2790,10 @@ class patroni (
   if $install_method == &#39;pip&#39; {
     if $manage_python {
       class { &#39;python&#39;:
-        version    =&gt; $python_class_version,
-        dev        =&gt; &#39;present&#39;,
-        virtualenv =&gt; &#39;present&#39;,
+        version             =&gt; $python_class_version,
+        dev                 =&gt; &#39;present&#39;,
+        venv                =&gt; &#39;present&#39;,
+        manage_venv_package =&gt; $manage_venv_package,
       }
     }
 
@@ -2794,26 +2804,12 @@ class patroni (
       creates =&gt; $install_dir,
     }
 
-    if $facts[&#39;os&#39;][&#39;family&#39;] == &#39;RedHat&#39; {
-      python::virtualenv { &#39;patroni&#39;:
-        version     =&gt; $python_venv_version,
-        venv_dir    =&gt; $install_dir,
-        virtualenv  =&gt; &#39;virtualenv-3&#39;,
-        systempkgs  =&gt; true,
-        distribute  =&gt; false,
-        environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
-        require     =&gt; Exec[&#39;patroni-mkdir-install_dir&#39;],
-      }
-    }
-
-    if $facts[&#39;os&#39;][&#39;family&#39;] == &#39;Debian&#39; {
-      python::pyvenv { &#39;patroni&#39;:
-        version     =&gt; $python_venv_version,
-        venv_dir    =&gt; $install_dir,
-        systempkgs  =&gt; true,
-        environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
-        require     =&gt; Exec[&#39;patroni-mkdir-install_dir&#39;],
-      }
+    python::pyvenv { &#39;patroni&#39;:
+      version     =&gt; $python_venv_version,
+      venv_dir    =&gt; $install_dir,
+      systempkgs  =&gt; true,
+      environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+      require     =&gt; Exec[&#39;patroni-mkdir-install_dir&#39;],
     }
 
     if $custom_pip_provider {
@@ -2861,11 +2857,12 @@ class patroni (
   if $install_method == &#39;pip&#39; {
     $config_dir = dirname($config_path)
     file { &#39;patroni_config_dir&#39;:
-      ensure =&gt; &#39;directory&#39;,
-      path   =&gt; $config_dir,
-      owner  =&gt; &#39;postgres&#39;,
-      group  =&gt; &#39;postgres&#39;,
-      mode   =&gt; &#39;0755&#39;,
+      ensure  =&gt; &#39;directory&#39;,
+      path    =&gt; $config_dir,
+      owner   =&gt; &#39;postgres&#39;,
+      group   =&gt; &#39;postgres&#39;,
+      mode    =&gt; &#39;0755&#39;,
+      require =&gt; Python::Pyvenv[&#39;patroni&#39;],
     }
   }
 
