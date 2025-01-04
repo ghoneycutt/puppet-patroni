@@ -92,7 +92,7 @@
         <span class='name'>scope</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
       
@@ -108,7 +108,7 @@
         <span class='name'>namespace</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;/service/&#39;</tt>)</em>
@@ -1839,7 +1839,7 @@
         <span class='name'>zookeeper_hosts</span>
       
       
-        <span class='type'>(<tt>Array[String]</tt>)</span>
+        <span class='type'>(<tt>Array[String[1]]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>[]</tt>)</em>
@@ -1875,7 +1875,7 @@
         <span class='name'>watchdog_device</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>Stdlib::Absolutepath</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;/dev/watchdog&#39;</tt>)</em>
@@ -1929,7 +1929,7 @@
         <span class='name'>postgresql_version</span>
       
       
-        <span class='type'>(<tt>Optional[String]</tt>)</span>
+        <span class='type'>(<tt>Optional[String[1]]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
@@ -1947,7 +1947,7 @@
         <span class='name'>package_name</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;patroni&#39;</tt>)</em>
@@ -1965,7 +1965,7 @@
         <span class='name'>version</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;present&#39;</tt>)</em>
@@ -1983,7 +1983,7 @@
         <span class='name'>install_dependencies</span>
       
       
-        <span class='type'>(<tt>Array</tt>)</span>
+        <span class='type'>(<tt>Array[String[1]]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>[]</tt>)</em>
@@ -2055,7 +2055,7 @@
         <span class='name'>python_class_version</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;36&#39;</tt>)</em>
@@ -2073,7 +2073,7 @@
         <span class='name'>python_venv_version</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;3.6&#39;</tt>)</em>
@@ -2109,7 +2109,7 @@
         <span class='name'>config_path</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>Stdlib::Absolutepath</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;/opt/app/patroni/etc/postgresql.yml&#39;</tt>)</em>
@@ -2127,7 +2127,7 @@
         <span class='name'>config_owner</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;postgres&#39;</tt>)</em>
@@ -2145,7 +2145,7 @@
         <span class='name'>config_group</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;postgres&#39;</tt>)</em>
@@ -2163,7 +2163,7 @@
         <span class='name'>config_mode</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>Stdlib::Filemode</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;0600&#39;</tt>)</em>
@@ -2181,7 +2181,7 @@
         <span class='name'>service_name</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;patroni&#39;</tt>)</em>
@@ -2199,7 +2199,7 @@
         <span class='name'>service_ensure</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>Enum['running', 'stopped']</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;running&#39;</tt>)</em>
@@ -2307,7 +2307,7 @@
         <span class='name'>standby_cluster_primary_slot_name</span>
       
       
-        <span class='type'>(<tt>Variant[String[1], Optional[String[1]]]</tt>)</span>
+        <span class='type'>(<tt>String[1]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;patroni&#39;</tt>)</em>
@@ -2661,8 +2661,8 @@
 class patroni (
 
   # Global Settings
-  String $scope,
-  String $namespace = &#39;/service/&#39;,
+  String[1] $scope,
+  String[1] $namespace = &#39;/service/&#39;,
   String $hostname = $facts[&#39;networking&#39;][&#39;hostname&#39;],
 
   # Bootstrap Settings
@@ -2691,7 +2691,7 @@ class patroni (
   Boolean $is_standby = false,
   String $standby_cluster_host = &#39;127.0.0.1&#39;,
   Stdlib::Port $standby_cluster_port = 5432,
-  Variant[String[1], Optional[String[1]]] $standby_cluster_primary_slot_name = &#39;patroni&#39;,
+  String[1] $standby_cluster_primary_slot_name = &#39;patroni&#39;,
 
   # PostgreSQL Settings
   String $superuser_username = &#39;postgres&#39;,
@@ -2781,31 +2781,31 @@ class patroni (
 
   # ZooKeeper Settings
   Boolean $use_zookeeper = false,
-  Array[String] $zookeeper_hosts = [],
+  Array[String[1]] $zookeeper_hosts = [],
 
   # Watchdog Settings
   Enum[&#39;off&#39;,&#39;automatic&#39;,&#39;required&#39;] $watchdog_mode = &#39;automatic&#39;,
-  String $watchdog_device = &#39;/dev/watchdog&#39;,
+  Stdlib::Absolutepath $watchdog_device = &#39;/dev/watchdog&#39;,
   Integer $watchdog_safety_margin = 5,
 
   # Module Specific Settings
   Boolean $manage_postgresql = true,
-  Optional[String] $postgresql_version = undef,
-  String $package_name = &#39;patroni&#39;,
-  String $version = &#39;present&#39;,
-  Array $install_dependencies = [],
+  Optional[String[1]] $postgresql_version = undef,
+  String[1] $package_name = &#39;patroni&#39;,
+  String[1] $version = &#39;present&#39;,
+  Array[String[1]] $install_dependencies = [],
   Boolean $manage_python = true,
   Enum[&#39;package&#39;,&#39;pip&#39;] $install_method = &#39;pip&#39;,
   Stdlib::Absolutepath $install_dir = &#39;/opt/app/patroni&#39;,
-  String $python_class_version = &#39;36&#39;,
-  String $python_venv_version = &#39;3.6&#39;,
+  String[1] $python_class_version = &#39;36&#39;,
+  String[1] $python_venv_version = &#39;3.6&#39;,
   Boolean $manage_venv_package = true,
-  String $config_path = &#39;/opt/app/patroni/etc/postgresql.yml&#39;,
-  String $config_owner = &#39;postgres&#39;,
-  String $config_group = &#39;postgres&#39;,
-  String $config_mode = &#39;0600&#39;,
-  String $service_name = &#39;patroni&#39;,
-  String $service_ensure = &#39;running&#39;,
+  Stdlib::Absolutepath $config_path = &#39;/opt/app/patroni/etc/postgresql.yml&#39;,
+  String[1] $config_owner = &#39;postgres&#39;,
+  String[1] $config_group = &#39;postgres&#39;,
+  Stdlib::Filemode $config_mode = &#39;0600&#39;,
+  String[1] $service_name = &#39;patroni&#39;,
+  Enum[&#39;running&#39;, &#39;stopped&#39;] $service_ensure = &#39;running&#39;,
   Boolean $service_enable = true,
   Optional[String[1]] $custom_pip_provider = undef,
 ) {
