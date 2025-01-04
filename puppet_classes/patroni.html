@@ -6,7 +6,7 @@
 <title>
   Puppet Class: patroni
   
-    &mdash; Documentation by YARD 0.9.34
+    &mdash; Documentation by YARD 0.9.36
   
 </title>
 
@@ -2248,6 +2248,78 @@
       
     </li>
   
+    <li>
+      
+        <span class='name'>is_standby</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Boolean to use Standby cluster</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>standby_cluster_host</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&#39;127.0.0.1&#39;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Refer to Standby configuration <code>host</code> setting</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>standby_cluster_port</span>
+      
+      
+        <span class='type'>(<tt>Stdlib::Port</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>5432</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Refer to Standby configuration <code>port</code> setting</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>standby_cluster_primary_slot_name</span>
+      
+      
+        <span class='type'>(<tt>Variant[String[1], Optional[String[1]]]</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&#39;patroni&#39;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Refer to Standby configuration <code>slot</code> setting</p>
+</div>
+      
+    </li>
+  
 </ul>
 
 
@@ -2259,14 +2331,6 @@
         <pre class="lines">
 
 
-245
-246
-247
-248
-249
-250
-251
-252
 253
 254
 255
@@ -2577,10 +2641,22 @@
 560
 561
 562
-563</pre>
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 245</span>
+        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 253</span>
 
 class patroni (
 
@@ -2612,6 +2688,10 @@ class patroni (
   Hash $bootstrap_users = {},
   Variant[Undef,String] $bootstrap_post_bootstrap = undef,
   Variant[Undef,String] $bootstrap_post_init = undef,
+  Boolean $is_standby = false,
+  String $standby_cluster_host = &#39;127.0.0.1&#39;,
+  Stdlib::Port $standby_cluster_port = 5432,
+  Variant[String[1], Optional[String[1]]] $standby_cluster_primary_slot_name = &#39;patroni&#39;,
 
   # PostgreSQL Settings
   String $superuser_username = &#39;postgres&#39;,
