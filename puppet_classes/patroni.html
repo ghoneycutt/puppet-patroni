@@ -651,7 +651,7 @@
         <span class='name'>pgsql_connect_address</span>
       
       
-        <span class='type'>(<tt>String</tt>)</span>
+        <span class='type'>(<tt>Variant[Undef,String]</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&quot;${facts[&#39;networking&#39;][&#39;fqdn&#39;]}:5432&quot;</tt>)</em>
@@ -2320,6 +2320,24 @@
       
     </li>
   
+    <li>
+      
+        <span class='name'>http_proxy</span>
+      
+      
+        <span class='type'>(<tt>Optional[Stdlib::HTTPUrl]</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>undef</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>URI for an http(s) proxy, used for pip commands</p>
+</div>
+      
+    </li>
+  
 </ul>
 
 
@@ -2331,8 +2349,6 @@
         <pre class="lines">
 
 
-253
-254
 255
 256
 257
@@ -2653,10 +2669,12 @@
 572
 573
 574
-575</pre>
+575
+576
+577</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 253</span>
+        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 255</span>
 
 class patroni (
 
@@ -2703,7 +2721,7 @@ class patroni (
   Variant[Undef,String] $callback_on_role_change = undef,
   Variant[Undef,String] $callback_on_start = undef,
   Variant[Undef,String] $callback_on_stop = undef,
-  String $pgsql_connect_address = &quot;${facts[&#39;networking&#39;][&#39;fqdn&#39;]}:5432&quot;,
+  Variant[Undef,String] $pgsql_connect_address = &quot;${facts[&#39;networking&#39;][&#39;fqdn&#39;]}:5432&quot;,
   Array[String] $pgsql_create_replica_methods = [&#39;basebackup&#39;],
   Optional[Stdlib::Unixpath] $pgsql_data_dir = undef,
   Variant[Undef,String] $pgsql_config_dir = undef,
@@ -2808,6 +2826,7 @@ class patroni (
   Enum[&#39;running&#39;, &#39;stopped&#39;] $service_ensure = &#39;running&#39;,
   Boolean $service_enable = true,
   Optional[String[1]] $custom_pip_provider = undef,
+  Optional[Stdlib::HTTPUrl] $http_proxy = undef,
 ) {
   if $manage_postgresql {
     class { &#39;postgresql::globals&#39;:
@@ -2868,6 +2887,11 @@ class patroni (
   $_pgsql_bin_dir = pick($pgsql_bin_dir, $default_bin_dir)
 
   if $install_method == &#39;pip&#39; {
+    $env_params = if $http_proxy {
+      [&quot;http_proxy=${http_proxy}&quot;, &quot;https_proxy=${http_proxy}&quot;]
+    } else {
+      []
+    }
     if $manage_python {
       class { &#39;python&#39;:
         version             =&gt; $python_class_version,
@@ -2877,7 +2901,7 @@ class patroni (
       }
     }
 
-    ensure_packages($install_dependencies, { &#39;before&#39; =&gt; Python::Pip[&#39;patroni&#39;] })
+    stdlib::ensure_packages($install_dependencies, { &#39;before&#39; =&gt; Python::Pip[&#39;patroni&#39;] })
 
     exec { &#39;patroni-mkdir-install_dir&#39;:
       command =&gt; &quot;/bin/mkdir -p ${install_dir}&quot;,
@@ -2888,7 +2912,7 @@ class patroni (
       version     =&gt; $python_venv_version,
       venv_dir    =&gt; $install_dir,
       systempkgs  =&gt; true,
-      environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+      environment =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;] + $env_params,
       require     =&gt; Exec[&#39;patroni-mkdir-install_dir&#39;],
     }
 
@@ -2900,7 +2924,7 @@ class patroni (
 
     python::pip { &#39;patroni&#39;:
       ensure       =&gt; $version,
-      environment  =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+      environment  =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;] + $env_params,
       pip_provider =&gt; $custom_pip_provider,
       virtualenv   =&gt; $virtualenv,
       before       =&gt; File[&#39;patroni_config&#39;],
@@ -2910,7 +2934,7 @@ class patroni (
       &#39;before&#39;       =&gt; Python::Pip[&#39;patroni&#39;],
       &#39;pip_provider&#39; =&gt; $custom_pip_provider,
       &#39;virtualenv&#39;   =&gt; $virtualenv,
-      &#39;environment&#39;  =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;],
+      &#39;environment&#39;  =&gt; [&quot;PIP_PREFIX=${install_dir}&quot;] + $env_params,
     }
 
     python::pip { &#39;psycopg2&#39;: * =&gt; $dependency_params }
@@ -2960,12 +2984,6 @@ class patroni (
     systemd::unit_file { &quot;${service_name}.service&quot;:
       content =&gt; template(&#39;patroni/patroni.service.erb&#39;),
       notify  =&gt; Service[&#39;patroni&#39;],
-    }
-
-    if versioncmp($facts[&#39;puppetversion&#39;],&#39;6.1.0&#39;) &lt; 0 {
-      # Puppet 5 does not execute &#39;systemctl daemon-reload&#39; automatically (https://tickets.puppetlabs.com/browse/PUP-3483)
-      # and camptocamp/systemd only creates this relationship when managing the service
-      Class[&#39;systemd::systemctl::daemon_reload&#39;] -&gt; Service[&#39;patroni&#39;]
     }
   }
 
